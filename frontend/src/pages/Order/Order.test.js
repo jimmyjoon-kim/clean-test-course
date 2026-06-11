@@ -9,9 +9,8 @@ import OrderContext from '../../context/OrderContext';
 describe('Test Order', () => {
   let orderName;
   let orderItems;
+
   beforeEach(() => {
-    //Arrange:
-    //Setup Order Context
     orderName = 'test-fun';
     orderItems = [
       { item: 'Test 1', quantity: 1 },
@@ -25,52 +24,42 @@ describe('Test Order', () => {
   });
 
   test('Test Delivery Fee', async () => {
-    //Add a Test to verify that delivery fee shows up here
-    //Act:
-    //Setup the Mock API
     setupMock();
-    //Call the page
+
     render(
       <OrderContext.Provider value={{ orderName, orderItems }}>
         <Order />
       </OrderContext.Provider>
     );
-    //Assert: replace the return true.
+
     await waitFor(() => {
-      return true;
+      expect(screen.getByText('$2.50')).toBeInTheDocument();
     });
   });
 
   test('Test Update Delivery Fee', async () => {
-    //Modify the delivery distance and verify that the delivery fee is updated
-    //Act:
-    //Setup the Mock API
     setupMock();
-    //Call the page
+
     render(
       <OrderContext.Provider value={{ orderName, orderItems }}>
         <Order />
       </OrderContext.Provider>
     );
 
-    //ACT
-    //Update the Delivery distance by choosing the 5 mile option from the drop down
-    userEvent.selectOptions(
-      // Find the select element, like a real user would.
+    await userEvent.selectOptions(
       screen.getByRole('combobox'),
-      // Find and select the 5 mile option, like a real user would.
       screen.getByRole('option', { name: '5 miles' })
     );
-    //Assert: replace the return true.
+
     await waitFor(() => {
-      return true;
+      expect(screen.getByText('$5.00')).toBeInTheDocument();
     });
   });
 });
 
 const setupMock = () => {
-  //Mock API calls
   const mockGet = jest.spyOn(axios, 'get');
+
   mockGet.mockImplementation((url) => {
     switch (url) {
       case `${API_URL}/api/delivery/test-fun/0`:

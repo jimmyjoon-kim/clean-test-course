@@ -4,16 +4,35 @@ on:
   push:
     branches:
       - lesson-3
+
 jobs:
   deploy:
+    needs: [function_test]
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
-#      - run: npm install && npm run build (commented out to save learner time)
+      - name: Disable Debug
+        run: |
+          sed -i 's/DEBUG = True/DEBUG = False/g' hangry_api/hangry_api/settings.py
       - name: Generate deployment package
-        run: zip -r deploy.zip build Dockerfile
+        run: zip -r deploy.zip . -x "*.git*"
       - name: '**PLACEHOLDER** Deploy to Elastic Beanstalk'
         run: echo Placeholder for Deployment
+
+  function_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm install
+        working-directory: frontend
+      - name: Run function tests
+        run: npm test -- --watchAll=false
+        working-directory: frontend
+
