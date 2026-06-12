@@ -7,14 +7,20 @@ on:
 
 jobs:
   security_test:
-    name: Execute the PyCharm security test
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
+    name: Execute the PyCharm security test
     steps:
       - uses: actions/checkout@v4
-      - uses: tonybaloney/pycharm-security@1.25.1
+      - name: Disable Debug
+        run: |
+          sed -i 's/DEBUG = True/DEBUG = False/g' hangry_api/hangry_api/settings.py
+      - name: Run PyCharm Security
+        uses: tonybaloney/pycharm-security@1.25.1
+        with:
+          fail_on_warnings: 'yes'
 
   build_and_test:
     needs: [security_test]
